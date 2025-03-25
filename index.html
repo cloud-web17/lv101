@@ -77,6 +77,9 @@
       padding: 12px 25px;
       border-radius: 30px;
     }
+    .hide-controls {
+      opacity: 0;
+    }
   </style>
 </head>
 <body>
@@ -89,7 +92,7 @@
 
   <div class="player-container" id="player">
     <iframe id="videoFrame" src="//ok.ru/videoembed/9252831698648?autoplay=1&muted=0&quality=1080p" frameborder="0" allow="autoplay"></iframe>
-    <div class="controls">
+    <div class="controls" id="controls">
       <button id="playPause">⏸️</button>
       <button id="fullscreen">⛶</button>
     </div>
@@ -98,9 +101,13 @@
   <script>
     const playPauseBtn = document.getElementById("playPause");
     const fullscreenBtn = document.getElementById("fullscreen");
+    const player = document.getElementById("player");
     const iframe = document.getElementById("videoFrame");
+    const controls = document.getElementById("controls");
     let isPlaying = true;
+    let hideControlsTimeout;
 
+    // Play/Pause Button
     playPauseBtn.addEventListener("click", () => {
       if (isPlaying) {
         iframe.src = "";
@@ -112,13 +119,40 @@
       isPlaying = !isPlaying;
     });
 
+    // Fullscreen Toggle with Landscape Mode
     fullscreenBtn.addEventListener("click", () => {
-      if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen();
-      } else {
-        document.exitFullscreen();
+      if (player.requestFullscreen) {
+        player.requestFullscreen();
+      } else if (player.mozRequestFullScreen) { // Firefox
+        player.mozRequestFullScreen();
+      } else if (player.webkitRequestFullscreen) { // Chrome, Safari and Opera
+        player.webkitRequestFullscreen();
+      } else if (player.msRequestFullscreen) { // IE/Edge
+        player.msRequestFullscreen();
+      }
+
+      // Force Landscape Mode on Mobile
+      if (screen.orientation && screen.orientation.lock) {
+        screen.orientation.lock("landscape").catch(() => {});
       }
     });
+
+    // Auto-hide controls when inactive
+    function showControls() {
+      controls.classList.remove("hide-controls");
+      clearTimeout(hideControlsTimeout);
+      hideControlsTimeout = setTimeout(() => {
+        controls.classList.add("hide-controls");
+      }, 3000);
+    }
+
+    player.addEventListener("mousemove", showControls);
+    player.addEventListener("touchstart", showControls);
+
+    // Hide controls after a delay
+    hideControlsTimeout = setTimeout(() => {
+      controls.classList.add("hide-controls");
+    }, 3000);
   </script>
 </body>
 </html>
