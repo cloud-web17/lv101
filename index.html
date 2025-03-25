@@ -3,12 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Zoners Stream</title>
+  <title>Livestream_101</title>
   <style>
     body {
       margin: 0;
-      background: rgba(40, 40, 40, 0.9);
-      backdrop-filter: blur(10px);
+      background: #2c2c2c;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -32,6 +31,14 @@
       font-size: 18px;
       color: #2ecc71;
     }
+    .offline-indicator {
+      font-size: 18px;
+      color: #e74c3c;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
     .player-container {
       position: relative;
       width: 90%;
@@ -46,8 +53,7 @@
     iframe {
       width: 100%;
       height: 100%;
-     pointer-events: none;
-      
+      pointer-events: none;
     }
     .controls {
       position: absolute;
@@ -56,14 +62,18 @@
       transform: translateX(-50%);
       display: flex;
       gap: 20px;
+      opacity: 1;
+      transition: opacity 0.5s;
+      z-index: 10;
       background: rgba(0, 0, 0, 0.5);
       padding: 12px 25px;
       border-radius: 30px;
       backdrop-filter: blur(10px);
       box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-      opacity: 1;
-      transition: opacity 0.5s;
-      z-index: 10;
+    }
+    .fullscreen .controls {
+      position: fixed;
+      bottom: 30px;
     }
     .controls button {
       background: linear-gradient(135deg, #1f1f1f, #3a3a3a);
@@ -81,39 +91,24 @@
       transform: scale(1.15);
       box-shadow: 0 6px 12px rgba(0,0,0,0.6);
     }
-    .notice-btn {
-      position: fixed;
-      top: 15px;
-      right: 15px;
-      background: linear-gradient(135deg, #e67e22, #f39c12);
-      color: white;
-      padding: 10px 18px;
-      font-size: 14px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.3s, transform 0.2s;
-      font-weight: bold;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-      z-index: 15;
-    }
-    .notice-btn:hover {
-      background: linear-gradient(135deg, #f39c12, #e67e22);
-      transform: scale(1.1);
-    }
     .watermark {
       position: absolute;
-      top: 10px;
-      left: 10px;
+      top: 15px;
+      left: 15px;
       color: white;
       background: rgba(0, 0, 0, 0.6);
-      padding: 5px 10px;
+      padding: 8px 12px;
       font-size: 14px;
-      border-radius: 6px;
-      font-weight: bold;
       z-index: 10;
+      border-radius: 8px;
+      font-weight: bold;
     }
-    .notice-modal {
+    .fullscreen .watermark {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+    }
+    .instructions-modal {
       position: fixed;
       top: 0;
       left: 0;
@@ -124,31 +119,119 @@
       align-items: center;
       justify-content: center;
       z-index: 20;
+    }
+    .instructions-content {
+      background: #fff;
+      padding: 30px;
+      max-width: 400px;
+      text-align: center;
+      border-radius: 12px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+    .instructions-content h3 {
+      margin-top: 0;
+      color: #333;
+    }
+    .instructions-content p {
+      color: #555;
+    }
+    .instructions-content button {
+      margin-top: 20px;
+      padding: 12px 30px;
+      background: linear-gradient(135deg, #333, #555);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+      font-weight: bold;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    }
+    .instructions-content button:hover {
+      background: linear-gradient(135deg, #555, #777);
+      transform: scale(1.05);
+    }
+    /* Notice button styles */
+    .notice-button {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: linear-gradient(135deg, #1f1f1f, #3a3a3a);
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 30px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+      z-index: 100;
+    }
+    .fullscreen .notice-button {
       display: none;
+    }
+    .notice-button:hover {
+      background: linear-gradient(135deg, #444, #666);
+      transform: scale(1.05);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.6);
+    }
+    .notice-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
     }
     .notice-content {
       background: #fff;
       padding: 30px;
-      max-width: 350px;
+      max-width: 500px;
       text-align: center;
       border-radius: 12px;
       box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+    .notice-content h3 {
+      margin-top: 0;
+      color: #333;
+    }
+    .notice-content p {
+      color: #555;
+      line-height: 1.6;
+    }
+    .notice-content button {
+      margin-top: 20px;
+      padding: 12px 30px;
+      background: linear-gradient(135deg, #333, #555);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+      font-weight: bold;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    }
+    .notice-content button:hover {
+      background: linear-gradient(135deg, #555, #777);
+      transform: scale(1.05);
     }
   </style>
 </head>
 <body>
 
 <div class="status-container">
-  <div class="streaming-heading">STREAMING</div>
-  <div id="liveIndicator" class="live-indicator">Online</div>
+  <div class="streaming-heading">Livestream101</div>
+  <div id="liveIndicator" class="live-indicator">OFFLINE</div>
 </div>
 
-<button class="notice-btn" id="noticeButton">NOTICE</button>
-
 <div class="player-container" id="player">
-  <iframe id="videoFrame" src="//ok.ru/videoembed/9529048636942?autoplay=1&muted=0&quality=1080p" frameborder="0" allow="autoplay"></iframe>
+  <iframe id="videoFrame" src="//ok.ru/videoembed/9252831698648?autoplay=1&muted=0&quality=1080p" frameborder="0" allow="autoplay" allowfullscreen></iframe>
   
-  <div class="watermark">CARATLAND 2025</div>
+  <div class="watermark">OFFLINE</div>
   
   <div class="controls" id="controls">
     <button id="playPause">⏸️</button>
@@ -157,21 +240,64 @@
   </div>
 </div>
 
+<button class="notice-button" id="noticeBtn">NOTICE</button>
+
 <div class="notice-modal" id="noticeModal">
   <div class="notice-content">
-    <h3>Notice</h3>
-    <p>Make sure to refresh the page if the stream does not play properly.</p>
-    <button id="closeNotice">Got it!</button>
+    <h3>Important Notice</h3>
+    <p>If you experience any issues with the stream:</p>
+    <p>1. Try refreshing the page</p>
+    <p>2. Click the pause button twice if audio is not working</p>
+    <p>3. Check your internet connection</p>
+    <p>4. The stream may be temporarily offline</p>
+    <button id="closeNotice">Close</button>
+  </div>
+</div>
+
+<div class="instructions-modal" id="modal">
+  <div class="instructions-content">
+    <h3>Instructions</h3>
+    <p>No sound? click ⏸️ two times then wait to restart</p>
+    <button id="gotItButton">Got it!</button>
   </div>
 </div>
 
 <script>
   document.addEventListener('DOMContentLoaded', () => {
+    const player = document.getElementById('player');
     const controls = document.getElementById('controls');
-    const iframe = document.getElementById('videoFrame').contentWindow;
+    const playPauseBtn = document.getElementById('playPause');
+    const volumeBtn = document.getElementById('volume');
+    const fullscreenBtn = document.getElementById('fullscreen');
+    const iframe = document.getElementById('videoFrame');
+    const modal = document.getElementById('modal');
+    const gotItButton = document.getElementById('gotItButton');
+    const liveIndicator = document.getElementById('liveIndicator');
+    const noticeBtn = document.getElementById('noticeBtn');
+    const noticeModal = document.getElementById('noticeModal');
+    const closeNotice = document.getElementById('closeNotice');
+    const body = document.body;
+
     let isPlaying = true;
     let isMuted = false;
     let hideTimeout;
+    let isFullscreen = false;
+
+    // Force 1080p quality
+    function ensureHDQuality() {
+      const currentSrc = iframe.src;
+      if (!currentSrc.includes('quality=1080p')) {
+        if (currentSrc.includes('?')) {
+          iframe.src = currentSrc + '&quality=1080p';
+        } else {
+          iframe.src = currentSrc + '?quality=1080p';
+        }
+      }
+    }
+
+    // Call initially and every 30 seconds to maintain quality
+    ensureHDQuality();
+    setInterval(ensureHDQuality, 30000);
 
     function showControls() {
       controls.style.opacity = 1;
@@ -181,38 +307,103 @@
       }, 3000);
     }
 
-    document.getElementById('player').addEventListener('mousemove', showControls);
-    document.getElementById('player').addEventListener('click', showControls);
+    function handleUserActivity() {
+      showControls();
+      if (isFullscreen) {
+        // In fullscreen, hide cursor after timeout
+        player.style.cursor = 'default';
+        setTimeout(() => {
+          player.style.cursor = 'none';
+        }, 3000);
+      }
+    }
+
+    player.addEventListener('mousemove', handleUserActivity);
+    player.addEventListener('click', handleUserActivity);
     showControls();
 
-    document.getElementById('playPause').addEventListener('click', () => {
+    playPauseBtn.addEventListener('click', () => {
       isPlaying = !isPlaying;
-      document.getElementById('playPause').textContent = isPlaying ? '⏸️' : '▶️';
-      iframe.postMessage({ method: isPlaying ? 'play' : 'pause' }, '*');
-    });
-
-    document.getElementById('volume').addEventListener('click', () => {
-      isMuted = !isMuted;
-      document.getElementById('volume').textContent = isMuted ? '🔇' : '🔊';
-      iframe.postMessage({ method: isMuted ? 'mute' : 'unmute' }, '*');
-    });
-
-    document.getElementById('fullscreen').addEventListener('click', () => {
-      const player = document.getElementById('player');
-      if (!document.fullscreenElement) {
-        player.requestFullscreen();
-      } else {
-        document.exitFullscreen();
+      playPauseBtn.textContent = isPlaying ? '⏸️' : '▶️';
+      if (isPlaying) {
+        const src = iframe.src;
+        iframe.src = '';
+        setTimeout(() => {
+          iframe.src = src;
+          ensureHDQuality(); // Ensure quality is maintained after reload
+        }, 100);
       }
     });
 
-    document.getElementById('noticeButton').addEventListener('click', () => {
-      document.getElementById('noticeModal').style.display = 'flex';
+    volumeBtn.addEventListener('click', () => {
+      isMuted = !isMuted;
+      volumeBtn.textContent = isMuted ? '🔇' : '🔊';
     });
 
-    document.getElementById('closeNotice').addEventListener('click', () => {
-      document.getElementById('noticeModal').style.display = 'none';
+    // Fullscreen functionality
+    fullscreenBtn.addEventListener('click', () => {
+      if (document.fullscreenElement) {
+        document.exitFullscreen();
+      } else {
+        if (player.requestFullscreen) {
+          player.requestFullscreen();
+        } else if (player.webkitRequestFullscreen) {
+          player.webkitRequestFullscreen();
+        } else if (player.msRequestFullscreen) {
+          player.msRequestFullscreen();
+        }
+      }
     });
+
+    // Handle fullscreen change events
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('msfullscreenchange', handleFullscreenChange);
+
+    function handleFullscreenChange() {
+      isFullscreen = !!(document.fullscreenElement || 
+                       document.webkitFullscreenElement || 
+                       document.msFullscreenElement);
+      
+      if (isFullscreen) {
+        body.classList.add('fullscreen');
+        showControls(); // Show controls when entering fullscreen
+        player.style.cursor = 'default'; // Show cursor initially
+      } else {
+        body.classList.remove('fullscreen');
+        player.style.cursor = ''; // Reset cursor
+      }
+    }
+
+    gotItButton.addEventListener('click', () => {
+      modal.style.display = 'none';
+    });
+
+    noticeBtn.addEventListener('click', () => {
+      noticeModal.style.display = 'flex';
+    });
+
+    closeNotice.addEventListener('click', () => {
+      noticeModal.style.display = 'none';
+    });
+
+    noticeModal.addEventListener('click', (e) => {
+      if (e.target === noticeModal) {
+        noticeModal.style.display = 'none';
+      }
+    });
+
+    function toggleLiveStatus(isOnline) {
+      if (isOnline) {
+        liveIndicator.textContent = 'Online';
+        liveIndicator.classList.remove('offline-indicator');
+        liveIndicator.classList.add('live-indicator');
+      } else {
+        liveIndicator.textContent = 'Offline';
+        liveIndicator.classList.remove('live-indicator');
+        liveIndicator.classList.add('offline-indicator');
+      }
+    }
   });
 </script>
 
