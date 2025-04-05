@@ -215,11 +215,11 @@
       background: #1a1a1a;
       color: #aaa;
       padding: 20px 0;
-      margin-top: auto;
       text-align: center;
       font-size: 14px;
       border-top: 1px solid #333;
-      position: relative;
+      position: absolute; /* Change position to absolute */
+      bottom: 0; /* Stick it to the bottom of the page */
     }
     .footer-content {
       max-width: 1200px;
@@ -229,6 +229,7 @@
       flex-direction: column;
       align-items: center;
       gap: 10px;
+    }
     .copyright {
       margin-top: 15px;
       font-size: 12px;
@@ -245,8 +246,6 @@
 
 <div class="player-container" id="player">
   <iframe src="//ok.ru/videoembed/9545356549646?autoplay=1" frameborder="0" allow="autoplay; fullscreen"></iframe>
-  
-  
   
   <div class="controls" id="controls">
     <button id="playPause">⏸️</button>
