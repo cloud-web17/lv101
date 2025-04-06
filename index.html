@@ -257,22 +257,6 @@
   opacity: 1;
 }
 
-.toggle-notification-button {
-  margin-top: 15px;
-  padding: 10px 18px;
-  background: linear-gradient(135deg, #444, #666);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: background 0.3s, transform 0.2s;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-}
-.toggle-notification-button:hover {
-  background: linear-gradient(135deg, #555, #777);
-  transform: scale(1.05);
-}
   </style>
 </head>
 <body>
@@ -281,10 +265,6 @@
   <div class="streaming-heading">Livestream101</div>
   <div id="liveIndicator" class="live-indicator">Online</div>
 </div>
-
-<button class="toggle-notification-button" id="toggleNotificationBtn">
-  🔕 Turn Off Notification
-</button>
 
 <div class="top-stream-notification" id="topStreamNotification">
   🔴 Stream Starting Soon...<br />Please wait.
@@ -454,44 +434,6 @@ setTimeout(showTopNotification, 1000);
 // Repeat every 20s
 setInterval(showTopNotification, 30000);
 
-const topNotification = document.getElementById('topStreamNotification');
-const toggleBtn = document.getElementById('toggleNotificationBtn');
-
-let notificationEnabled = true;
-let notificationInterval;
-
-function showTopNotification() {
-  if (!notificationEnabled) return;
-  topNotification.classList.add('show');
-  setTimeout(() => {
-    topNotification.classList.remove('show');
-  }, 4000);
-}
-
-function startNotificationLoop() {
-  notificationInterval = setInterval(showTopNotification, 20000);
-}
-
-function stopNotificationLoop() {
-  clearInterval(notificationInterval);
-}
-
-toggleBtn.addEventListener('click', () => {
-  notificationEnabled = !notificationEnabled;
-  toggleBtn.textContent = notificationEnabled ? '🔕 Turn Off Notification' : '🔔 Turn On Notification';
-
-  if (notificationEnabled) {
-    showTopNotification(); // Show once right away
-    startNotificationLoop();
-  } else {
-    stopNotificationLoop();
-    topNotification.classList.remove('show'); // Hide if showing
-  }
-});
-
-// Start on load
-setTimeout(showTopNotification, 1000);
-startNotificationLoop();
   });
 </script>
 
